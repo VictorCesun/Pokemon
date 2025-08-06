@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
 
+const zoneTypes = {
+  bosque: ["agua", "eléctrico", "planta", "volador"],
+  volcán: ["fuego", "siniestro", "roca", "lucha"],
+};
+
 // --- Datos de ataques por tipo de enemigo ---
 const enemyTypes = {
   fuego: [
@@ -26,16 +31,48 @@ const enemyTypes = {
     { name: "Carga", damage: 0, accuracy: 100 },
     { name: "Chispa", damage: 45, accuracy: 90 },
   ],
+  planta: [
+    { name: "Hoja Afilada", damage: 40, accuracy: 100 },
+    { name: "Latigazo", damage: 55, accuracy: 95 },
+    { name: "Drenadoras", damage: 0, accuracy: 100 },
+    { name: "Rayo Solar", damage: 65, accuracy: 90 },
+  ],
+  roca: [
+    { name: "Piedra Afilada", damage: 40, accuracy: 100 },
+    { name: "Avalancha", damage: 60, accuracy: 90 },
+    { name: "Refuerzo", damage: 0, accuracy: 100 },
+    { name: "Golpe Roca", damage: 35, accuracy: 85 },
+  ],
+  volador: [
+    { name: "Ataque Ala", damage: 40, accuracy: 100 },
+    { name: "Tornado", damage: 60, accuracy: 85 },
+    { name: "Viento Cortante", damage: 50, accuracy: 90 },
+    { name: "Picotazo", damage: 35, accuracy: 95 },
+  ],
+  lucha: [
+    { name: "Puño Dinámico", damage: 40, accuracy: 100 },
+    { name: "Doble Patada", damage: 60, accuracy: 90 },
+    { name: "Agarre", damage: 0, accuracy: 100 },
+    { name: "Golpe Karate", damage: 50, accuracy: 85 },
+  ],
 };
 
-const playerMoves = [
-  { name: "Placaje", damage: 35, accuracy: 95 },
-  { name: "Ascuas", damage: 40, accuracy: 100 },
-  { name: "Gruñido", damage: 0, accuracy: 100 },
-  { name: "Ataque Rápido", damage: 40, accuracy: 100 },
-];
+const pokemonsByZone = {
+  bosque: [
+    { name: "Squirtle", type: "agua", moves: enemyTypes.agua },
+    { name: "Pikachu", type: "eléctrico", moves: enemyTypes.eléctrico },
+    { name: "Bulbasaur", type: "planta", moves: enemyTypes.planta },
+    { name: "Pidgey", type: "volador", moves: enemyTypes.volador },
+  ],
+  volcan: [
+    { name: "Charmander", type: "fuego", moves: enemyTypes.fuego },
+    { name: "Murkrow", type: "siniestro", moves: enemyTypes.siniestro },
+    { name: "Onix", type: "roca", moves: enemyTypes.roca },
+    { name: "Machop", type: "lucha", moves: enemyTypes.lucha },
+  ],
+};
 
-const CombatComponent = ({ onExitCombat }) => {
+const CombatComponent = ({ zone, onExitCombat }) => {
   const [playerHealth, setPlayerHealth] = useState(100);
   const [enemyHealth, setEnemyHealth] = useState(120);
   const [combatMessage, setCombatMessage] = useState("¡Un enemigo apareció!");
@@ -43,6 +80,14 @@ const CombatComponent = ({ onExitCombat }) => {
   const [enemyMoves, setEnemyMoves] = useState([]);
   const [showMoves, setShowMoves] = useState(false);
   const [showPotionMenu, setShowPotionMenu] = useState(false);
+
+  // Aquí definí movimientos simples para el jugador
+  const playerMoves = [
+    { name: "Golpe Básico", damage: 40, accuracy: 95 },
+    { name: "Patada", damage: 50, accuracy: 90 },
+    { name: "Ataque Rápido", damage: 60, accuracy: 100 },
+    { name: "Defensa", damage: 1, accuracy: 100 },
+  ];
 
   // Inventario de pociones
   const [potions, setPotions] = useState({
@@ -52,12 +97,12 @@ const CombatComponent = ({ onExitCombat }) => {
   });
 
   useEffect(() => {
-    const types = Object.keys(enemyTypes);
+    const types = zoneTypes[zone] || ["agua"];
     const randomType = types[Math.floor(Math.random() * types.length)];
     setEnemyType(randomType);
     setEnemyMoves(enemyTypes[randomType]);
-    setCombatMessage(`¡Un Pokémon de tipo ${randomType.toUpperCase()} apareció!`);
-  }, []);
+    setCombatMessage(`¡Un Pokémon de tipo ${randomType.toUpperCase()} apareció en la zona ${zone.toUpperCase()}!`);
+  }, [zone]);
 
   useEffect(() => {
     if (playerHealth <= 0) {
@@ -172,7 +217,7 @@ const CombatComponent = ({ onExitCombat }) => {
                 height: "10px",
                 backgroundColor: getEnemyHealthColor(),
                 width: `${(enemyHealth / 120) * 100}%`,
-                transition: "width 0.3s ease, background-color 0.3s ease",
+                transition: "width 0.3s ease, backgroundColor 0.3s ease",
               }}
             ></div>
           </div>
@@ -188,7 +233,7 @@ const CombatComponent = ({ onExitCombat }) => {
                 height: "10px",
                 backgroundColor: getPlayerHealthColor(),
                 width: `${(playerHealth / 100) * 100}%`,
-                transition: "width 0.3s ease, background-color 0.3s ease",
+                transition: "width 0.3s ease, backgroundColor 0.3s ease",
               }}
             ></div>
           </div>
@@ -201,7 +246,9 @@ const CombatComponent = ({ onExitCombat }) => {
         <div style={{ flex: 2, padding: "10px", borderRight: "4px solid black", whiteSpace: "pre-line" }}>
           {combatMessage}
           <br />
-          <span>🧪 Pociones: {potions.pocion} | Super: {potions.super} | Híper: {potions.hiper}</span>
+          <span>
+            🧪 Pociones: {potions.pocion} | Super: {potions.super} | Híper: {potions.hiper}
+          </span>
         </div>
 
         <div
